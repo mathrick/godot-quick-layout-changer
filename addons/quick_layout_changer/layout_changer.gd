@@ -4,20 +4,29 @@ class_name LayoutChanger extends EditorPlugin
 const LayoutPicker = preload("layout_picker.gd")
 var layout_picker: LayoutPicker
 
-func find_popup_by_name(name, node=null) -> PopupMenu:
+func find_popup_by_name(node, name, descend_into_items=false) -> PopupMenu:
 	if node == null:
 		node = get_tree().root
-	for child in node.get_children():
-		# FIXME: This is horribly hacky, and relies on the Layouts apparently never being localised
-		# (at least to the extent I was able to test). There are probably a 1001 ways
-		# in which it can break, but I don't think we can do any better with the current
-		# editor API. There's nothing we can do to manipulate layouts directly, and
-		# a slightly better hack involving looking for a shortcut action won't work
-		# because those aren't exposed:
-		# https://github.com/godotengine/godot-proposals/issues/4112
-		if child is PopupMenu and child.name == "Layouts":
-			return child
-		var candidate = find_popup_by_name(name, child)
+	# FIXME: This is horribly hacky, and relies on the Layouts apparently never being localised
+	# (at least to the extent I was able to test). There are probably a 1001 ways
+	# in which it can break, but I don't think we can do any better with the current
+	# editor API. There's nothing we can do to manipulate layouts directly, and
+	# a slightly better hack involving looking for a shortcut action won't work
+	# because those aren't exposed:
+	# https://github.com/godotengine/godot-proposals/issues/4112
+	var _children = []
+	if node is PopupMenu:
+		if node.name == name:
+			return node
+		if descend_into_items:
+			for item in node.item_count:
+				var submenu = node.get_item_submenu_node(item)
+				if node.get_item_text(item) == name:
+					return submenu
+				if submenu:
+					_children.append(submenu)
+	for child in _children if _children else node.get_children():
+		var candidate = find_popup_by_name(child, name, descend_into_items)
 		if candidate:
 			return candidate
 	return null
@@ -32,4 +41,3 @@ func _exit_tree():
 	remove_control_from_container(EditorPlugin.CONTAINER_TOOLBAR, layout_picker)
 	if layout_picker:
 		layout_picker.queue_free()
-
