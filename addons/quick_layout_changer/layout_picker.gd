@@ -3,8 +3,48 @@ extends OptionButton
 
 const DEFAULT_VERSION = "4.3"
 const GODOT_VERSION_MAP = {
-	"4.2": ["Layouts", false],
-	"4.3": ["Editor Layout", true],
+	"4.2": {"string": "Layouts", "descend": false},
+	"4.3": {"string": "Editor Layout", "descend": true},
+}
+const TRANSLATIONS = {
+	"4.3": {
+		'ar': 'تنسيق المحرّر',
+		'ca': "Disseny de l'Editor",
+		'cs': 'Rozložení editoru',
+		'de': 'Editorlayout',
+		'el': 'Διάταξη επεξεργαστή',
+		'eo': 'Aranĝo de la redaktilo',
+		'es': 'Layout del Editor',
+		'es_AR': 'Layout del Editor',
+		'et': 'Redaktori paigutus',
+		'fa': 'طرح\u200cبندی ویرایشگر',
+		'fi': 'Editorin ulkoasu',
+		'fr': "Disposition de l'éditeur",
+		'ga': 'Leagan Amach an Eagarthóra',
+		'gl': 'Disposición das Ventás do Editor',
+		'he': 'פריסת עורך',
+		'hu': 'Szerkesztő Elrendezés',
+		'id': 'Tata Letak Editor',
+		'it': "Disposizione dell'editor",
+		'ja': 'エディターレイアウト',
+		'ko': '에디터 레이아웃',
+		'lv': 'Redaktora izkārtojums',
+		'ms': 'Editor Susun Atur',
+		'nb': 'Redigeringsverktøy Layout',
+		'nl': 'Bewerkers­indeling',
+		'pl': 'Układ edytora',
+		'pt': 'Apresentação do Editor',
+		'pt_BR': 'Layout do Editor',
+		'ro': 'Schema Editor',
+		'ru': 'Макет редактора',
+		'sk': 'Layout Editora',
+		'th': 'เค้าโครงตัวแก้ไข',
+		'tr': 'Düzenleyici Yerleşim Düzeni',
+		'uk': 'Редактор компонування',
+		'vi': 'Cài đặt Bố cục',
+		'zh_CN': '编辑器布局',
+		'zh_TW': '編輯器配置'
+	}
 }
 const REFRESH_ID = -1
 
@@ -17,10 +57,22 @@ var last_active = -1
 
 var _processing = false
 
-func _get_search_target():
+func _get_search_target() -> Dictionary:
 	var version_info = Engine.get_version_info()
-	var version = "%s.%s" % [version_info.major, version_info.minor]
-	return GODOT_VERSION_MAP.get(version, GODOT_VERSION_MAP[DEFAULT_VERSION])
+	var versions = [
+		"%s.%s.%s" % [version_info.major, version_info.minor, version_info.patch],
+		"%s.%s" % [version_info.major, version_info.minor],
+		DEFAULT_VERSION,
+	]
+	var result
+	var actual_version
+	for version in versions:
+		if version in GODOT_VERSION_MAP:
+			result = GODOT_VERSION_MAP[version].duplicate()
+			actual_version = version
+	var translations = TRANSLATIONS.get(actual_version, {})
+	result.string = translations.get(TranslationServer.get_tool_locale(), result.string)
+	return result
 
 func get_first_layout_index() -> int:
 	var first_layout_index = 0
@@ -36,7 +88,6 @@ func get_first_layout_index() -> int:
 	return first_layout_index + 1
 
 func populate():
-	#var active_layout = get_item_text(last_active) if last_active != -1 else null
 	var active_layout = null
 	var active_index = -1
 
@@ -73,6 +124,7 @@ func _on_layouts_menu_changed():
 
 func _on_item_selected(index):
 	if get_item_id(index) == REFRESH_ID:
+		last_active = -1
 		populate()
 		return
 
@@ -87,7 +139,8 @@ func _on_item_selected(index):
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	layouts_menu = layout_changer_plugin.find_popup_by_name.callv([null] + _get_search_target()) as PopupMenu
+	var target = _get_search_target()
+	layouts_menu = layout_changer_plugin.find_popup_by_name(null, target.string, target.descend) as PopupMenu
 	if not layouts_menu:
 		printerr("Could not set up Quick Layout Changer plugin")
 		printerr("Please try updating the plugin, or report a bug at %s" % REPO_URL)
