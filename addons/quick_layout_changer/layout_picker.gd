@@ -70,6 +70,7 @@ func _get_search_target() -> Dictionary:
 		if version in GODOT_VERSION_MAP:
 			result = GODOT_VERSION_MAP[version].duplicate()
 			actual_version = version
+			break
 	var translations = TRANSLATIONS.get(actual_version, {})
 	result.string = translations.get(TranslationServer.get_tool_locale(), result.string)
 	return result
