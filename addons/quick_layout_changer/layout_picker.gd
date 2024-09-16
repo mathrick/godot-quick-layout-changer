@@ -8,42 +8,42 @@ const GODOT_VERSION_MAP = {
 }
 const TRANSLATIONS = {
 	"4.3": {
-		'ar': 'تنسيق المحرّر',
-		'ca': "Disseny de l'Editor",
-		'cs': 'Rozložení editoru',
-		'de': 'Editorlayout',
-		'el': 'Διάταξη επεξεργαστή',
-		'eo': 'Aranĝo de la redaktilo',
-		'es': 'Layout del Editor',
-		'es_AR': 'Layout del Editor',
-		'et': 'Redaktori paigutus',
-		'fa': 'طرح\u200cبندی ویرایشگر',
-		'fi': 'Editorin ulkoasu',
-		'fr': "Disposition de l'éditeur",
-		'ga': 'Leagan Amach an Eagarthóra',
-		'gl': 'Disposición das Ventás do Editor',
-		'he': 'פריסת עורך',
-		'hu': 'Szerkesztő Elrendezés',
-		'id': 'Tata Letak Editor',
-		'it': "Disposizione dell'editor",
-		'ja': 'エディターレイアウト',
-		'ko': '에디터 레이아웃',
-		'lv': 'Redaktora izkārtojums',
-		'ms': 'Editor Susun Atur',
-		'nb': 'Redigeringsverktøy Layout',
-		'nl': 'Bewerkers­indeling',
-		'pl': 'Układ edytora',
-		'pt': 'Apresentação do Editor',
-		'pt_BR': 'Layout do Editor',
-		'ro': 'Schema Editor',
-		'ru': 'Макет редактора',
-		'sk': 'Layout Editora',
-		'th': 'เค้าโครงตัวแก้ไข',
-		'tr': 'Düzenleyici Yerleşim Düzeni',
-		'uk': 'Редактор компонування',
-		'vi': 'Cài đặt Bố cục',
-		'zh_CN': '编辑器布局',
-		'zh_TW': '編輯器配置'
+		'ar': {'string': 'تنسيق المحرّر'},
+		'ca': {'string': "Disseny de l'Editor", 'short': 'Disseny'},
+		'cs': {'string': 'Rozložení editoru', 'short': 'Rozložení'},
+		'de': {'string': 'Editorlayout'},
+		'el': {'string': 'Διάταξη επεξεργαστή'},
+		'eo': {'string': 'Aranĝo de la redaktilo', 'short': 'Aranĝo'},
+		'es': {'string': 'Layout del Editor'},
+		'es_AR': {'string': 'Layout del Editor'},
+		'et': {'string': 'Redaktori paigutus'},
+		'fa': {'string': 'طرح\u200cبندی ویرایشگر'},
+		'fi': {'string': 'Editorin ulkoasu'},
+		'fr': {'string': "Disposition de l'éditeur", 'short': 'Disposition'},
+		'ga': {'string': 'Leagan Amach an Eagarthóra'},
+		'gl': {'string': 'Disposición das Ventás do Editor'},
+		'he': {'string': 'פריסת עורך'},
+		'hu': {'string': 'Szerkesztő Elrendezés'},
+		'id': {'string': 'Tata Letak Editor'},
+		'it': {'string': "Disposizione dell'editor", 'short': 'Disposizione'},
+		'ja': {'string': 'エディターレイアウト', 'short': 'レイアウト'},
+		'ko': {'string': '에디터 레이아웃'},
+		'lv': {'string': 'Redaktora izkārtojums'},
+		'ms': {'string': 'Editor Susun Atur'},
+		'nb': {'string': 'Redigeringsverktøy Layout'},
+		'nl': {'string': 'Bewerkers­indeling', 'short': 'Indeling'},
+		'pl': {'string': 'Układ edytora', 'short': 'Układ'},
+		'pt': {'string': 'Apresentação do Editor', 'short': 'Apresentação'},
+		'pt_BR': {'string': 'Layout do Editor'},
+		'ro': {'string': 'Schema Editor'},
+		'ru': {'string': 'Макет редактора', 'short': 'Макет'},
+		'sk': {'string': 'Layout Editora'},
+		'th': {'string': 'เค้าโครงตัวแก้ไข'},
+		'tr': {'string': 'Düzenleyici Yerleşim Düzeni'},
+		'uk': {'string': 'Редактор компонування', 'short': 'компонування'},
+		'vi': {'string': 'Cài đặt Bố cục'},
+		'zh_CN': {'string': '编辑器布局'},
+		'zh_TW': {'string': '編輯器配置'},
 	}
 }
 const REFRESH_ID = -1
@@ -71,8 +71,12 @@ func _get_search_target() -> Dictionary:
 			result = GODOT_VERSION_MAP[version].duplicate()
 			actual_version = version
 			break
-	var translations = TRANSLATIONS.get(actual_version, {})
-	result.string = translations.get(TranslationServer.get_tool_locale(), result.string)
+	var locale = TranslationServer.get_tool_locale()
+	var translation = TRANSLATIONS.get(actual_version, {}).get(locale, {})
+	result.string = translation.get("string", result.string)
+	# Fall back to English for the short string, since some of the translations are
+	# massively unwieldy and long
+	result.short = translation.get("short", "Layout")
 	return result
 
 func get_first_layout_index() -> int:
@@ -107,7 +111,7 @@ func populate():
 	set_item_id(item_count - 1, REFRESH_ID)
 	selected = active_index
 	if last_active == -1:
-		text = "Layout"
+		text = _get_search_target().short
 
 func _on_layouts_menu_activated(id: int):
 	if _processing:

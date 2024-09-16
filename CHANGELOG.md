@@ -1,3 +1,7 @@
+* Version 1.3.0
+  - Add partial translations for the short string ("Layout") used by
+    the toolbar dropdown when no layout is selected
+
 * Version 1.2.1
   - Restore compatibility with 4.2
 
