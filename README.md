@@ -2,7 +2,15 @@ This is a simple Godot 4 editor plugin to change editor layouts
 directly from the toolbar, without going through the
 Editor->Layouts->... menu.
 
+<!--- changelog: 3
+      heading: Changes -->
+
 ![Screenshot of the plugin in action](screenshots/screenshot.png "Screenshot")
+
+Since version 1.3.0, the quick layout menu itself is localised in
+several languages (if running on Godot 4.3+).
+
+![Screenshot of localised layou menu](screenshots/localisation.png "Screenshot")
 
 **WARNING**: This plugin is very hacky and relies on a lot of
 internal details of how the editor works, since there's no official
@@ -16,6 +24,6 @@ it _should_ be compatible with:
   subsequent Godot releases will not be picked up
   automatically and will need a new release of the plugin
 
-If you run into problems, please open an issue, and I'll do my best to fix it.
+If you run into any problems, please open an issue, and I'll do my best to fix it.
 
 
